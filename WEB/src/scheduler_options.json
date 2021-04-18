@@ -1,0 +1,43 @@
+{
+  "edge":{
+    "jobToBatch":{
+      "color": "#F2F3F4",
+      "width": 1
+    },
+    "jobToJob":{
+      "color": "#F2F3F4",
+      "width": 3
+    }
+  },
+  "node":{
+    "batch":{
+      "color": {
+        "background": "#F8F9F9",
+        "border": "#424949"
+      }, 
+      "font": "30px arial #424949",
+      "shape": "box",
+      "margin": {
+        "top": 10,
+        "bottom": 10,
+        "left": 20,
+        "right": 20
+      }
+      
+    },
+    "job":{
+      "color": {
+        "background": "#82E0AA",
+        "border": "#424949"
+      }, 
+      "font": "30px arial #424949",
+      "shape": "circle",
+      "margin": {
+        "top": 10,
+        "bottom": 10,
+        "left": 20,
+        "right": 20
+      }
+    }
+  }
+}
