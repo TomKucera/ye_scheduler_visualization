@@ -1,9 +1,11 @@
+import styled from "styled-components";
 import React, { useCallback, useState } from "react";
 import "./App.css";
 import VisNetworkReactComponent from "vis-network-react";
 
 import DataProvider from './DataProvider';
 import DataTransformator from './DataTransformator';
+import { SchedulerData } from "./Types";
 
 //#region Options
 const options = {
@@ -50,49 +52,93 @@ const options = {
 }
 //#endregion
 
-const batch_id = DataProvider.getFirstBatch(true)?.BatchId;
+
 const data_scheduler = DataProvider.getData();
-const data_vis = DataTransformator.transformToVis(data_scheduler, batch_id);
+
+const VisBar = styled.div`
+  width: 15%; 
+  height: 100%; 
+  float: left;
+  border: 3px solid #ECEFF1;
+`;
+
+const BatchListItem = styled.div`
+  text-align: left;
+  padding: 10px;
+  margin: 10px;
+`;
+
+const BatchListItemCheckbox = styled.input.attrs({ type: 'checkbox' })`
+  text-align: left;
+  padding: 10px;
+  padding-left: 20px;
+`;
 
 function Vis() {
 
-  const [data, setData] = useState(data_vis);
-  const [networkNodes, setNetwortNodes] = useState([]);
+  const [data, setData] = useState<SchedulerData>(data_scheduler);
+  const [batchIds, setBatchIds] = useState<Array<string>>([]);
+  const [dataVis, setDataVis] = useState<vis.Data>(DataTransformator.transformToVis(data, batchIds));
 
-  const handleLoadData = () => {
-    console.log('load data');
-    console.log('data', data);
-    // getInputData().then((val: any) =>{ 
-
-    // }) ;
+  const onSelectNode = (params: any) => {
+    //const node_data = dataVis.get(5);
+    console.log("selectNode params", params);
+    //console.log("selectNode node_data", node_data);    
   };
 
-  const handleAddNode = useCallback(() => {
-    // const id = data.nodes.length + 1;
-    // setData({
-    //   ...data,
-    //   nodes: [...data.nodes, { id, label: `Node ${id}` }],
-    // });
-  }, [setData, data]);
+  const handleBatchCheck = (event: any) => {
+    const batch_id = event.target.value;
+    console.log('handleBatchCheck batchId', batch_id);
 
-  const getNodes = useCallback((a) => {
-    setNetwortNodes(a);
-  }, []);
+    const newBatchIds = [...batchIds];
+    const index = newBatchIds.indexOf(batch_id);
 
-  const handleGetNodes = useCallback(() => {
-    console.log(networkNodes);
-  }, [networkNodes]);
+    if (index !== -1) {
+      newBatchIds.splice(index, 1);
+    }
+    else {
+      newBatchIds.push(batch_id);
+    }
+    setBatchIds(newBatchIds);
+    setDataVis(DataTransformator.transformToVis(data, batchIds));
+  }
+
+  const renderBatchSelector = () => {
+    console.log("renderBatchSelector", data.tBatch);
+    return(
+    <div>
+      {
+        data.tBatch.map(b => {
+          const colors = DataTransformator.getBatchColors(data, b.BatchId);
+          const checked= batchIds.indexOf(b.BatchId) >= 0;
+          return (
+            <BatchListItem style={{ backgroundColor: colors.jobToJob }} key={b.BatchId} >
+              <BatchListItemCheckbox value={b.BatchId} onChange={handleBatchCheck} checked={checked} />
+              {b.BatchName}
+            </BatchListItem>
+          );
+        })
+      }
+    </div>);
+  };
 
   return (
     <div className="App">
-      <button onClick={handleLoadData}>Load data</button>
+      <VisBar>
+        {renderBatchSelector()}
+      </VisBar>
+      {/* <button onClick={handleLoadData}>Load data</button>
       <button onClick={handleAddNode}>add random node</button>
-      <button onClick={handleGetNodes}>get nodes</button>
-      <VisNetworkReactComponent
-        data={data}
+      <button onClick={handleGetNodes}>get nodes</button> */}
+      <VisNetworkReactComponent className="vis_component" style={{width: '80%', height: '100%', float: 'left'}}
+        data={DataTransformator.transformToVis(data, batchIds)}
+        // data = {dataVis}
         options={options}
-        //events={events}
-        getNodes={getNodes}
+        // events={{selectNode: function (params) {
+        //   console.log("selectNode Event:", params);
+        // }}}
+        events={{selectNode: onSelectNode}}
+        //getNodes={getNodes}
       />
     </div>
   );
